@@ -17,6 +17,10 @@ class _StrEnum(str, Enum):
         return self.value
 
 
+# Python 3.10 兼容：datetime.UTC 是 3.11+ 才有的
+_UTC = timezone.utc
+
+
 class MemoryTier(_StrEnum):
     """记忆分层：工作记忆 / 短期 / 长期。"""
 
