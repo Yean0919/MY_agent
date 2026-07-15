@@ -79,10 +79,10 @@ async def call_llm(
     try:
         llm = _get_llm()
         # 使用 streaming 模式避免 surrogate 字符序列化问题
-        content_parts = []
+        content_parts: list[str] = []
         async for chunk in llm.astream(messages):
             if hasattr(chunk, "content") and chunk.content:
-                content_parts.append(chunk.content)
+                content_parts.append(str(chunk.content))
         content = "".join(content_parts)
         if not content:
             content = ""

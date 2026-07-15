@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 # Python 3.10 兼容：StrEnum 是 3.11+ 才有的
 class _StrEnum(str, Enum):
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 # Python 3.10 兼容：datetime.UTC 是 3.11+ 才有的
@@ -60,7 +60,7 @@ class MemoryItem(BaseModel):
 class PersistentMemoryStore:
     """SQLite-backed long-term memory store."""
 
-    def __init__(self, db_path: str = "data/memory.db") -> None:
+    def __init__(self, db_path: str | Path = "data/memory.db") -> None:
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn: sqlite3.Connection | None = None
@@ -162,7 +162,8 @@ class PersistentMemoryStore:
 
     def count(self) -> int:
         conn = self._connect()
-        return conn.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
+        row = conn.execute("SELECT COUNT(*) FROM memories").fetchone()
+        return int(row[0]) if row else 0
 
     @staticmethod
     def _row_to_item(row: sqlite3.Row) -> MemoryItem:

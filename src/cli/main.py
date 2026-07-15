@@ -25,6 +25,7 @@ import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -78,7 +79,7 @@ def _center(text: str, width: int) -> str:
     return " " * pad + text
 
 
-def _build_welcome(settings) -> str:
+def _build_welcome(settings: Any) -> str:
     """构建 YEAN 艺术字欢迎界面（固定宽度）。"""
     width = UI_WIDTH
 
@@ -117,7 +118,7 @@ def _build_welcome(settings) -> str:
     return "\n".join(lines)
 
 
-def _print_welcome(settings) -> None:
+def _print_welcome(settings: Any) -> None:
     """打印 YEAN 欢迎界面。"""
     click.echo(_build_welcome(settings))
 
@@ -143,7 +144,7 @@ def _show_agents(orchestrator: Orchestrator) -> None:
         click.echo(f"  - {name}: {desc}")
 
 
-def _show_status(session_state: SessionState, settings) -> None:
+def _show_status(session_state: SessionState, settings: Any) -> None:
     """显示会话状态。"""
     click.echo("\n[Status] 会话状态:")
     click.echo(f"  Session: {session_state.session_id}")
@@ -195,7 +196,7 @@ def _build_orchestrator() -> Orchestrator:
 # ── 配置检查 ───────────────────────────────────────────────────────────────
 
 
-def _check_credentials(settings) -> str | None:
+def _check_credentials(settings: Any) -> str | None:
     """检查 LLM 凭证是否配置，返回错误信息或 None。"""
     api_key = settings.openai.api_key
     api_key_val = api_key.get_secret_value() if api_key else ""
@@ -230,7 +231,7 @@ def cli(
     """YEAN - Multi-Agent Terminal Coding Agent."""
     settings = get_settings()
     if log_level:
-        settings.log_level = log_level
+        settings.log_level = log_level  # type: ignore[assignment]
     if provider:
         settings.llm.default_provider = provider  # type: ignore[assignment]
     if model:
@@ -248,7 +249,7 @@ def cli(
         asyncio.run(_interactive(session, settings, project_root))
 
 
-async def _single_shot(prompt: str, session: str, settings, project_root: str) -> None:
+async def _single_shot(prompt: str, session: str, settings: Any, project_root: str) -> None:
     """单次执行模式 — 走 Harness。"""
     click.echo(f"> {prompt}\n")
 
@@ -264,7 +265,7 @@ async def _single_shot(prompt: str, session: str, settings, project_root: str) -
     )
 
 
-async def _interactive(session: str, settings, project_root: str) -> None:
+async def _interactive(session: str, settings: Any, project_root: str) -> None:
     """交互模式 — 所有输入统一走 Harness（AgentLoop）。"""
     _print_welcome(settings)
 

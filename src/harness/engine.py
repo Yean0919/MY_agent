@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 
 from src.core.llm import _get_llm
 from src.harness.memory import PersistentMemoryStore
@@ -131,7 +131,7 @@ class SafetyChecker:
         if state.consecutive_errors >= self.policy.max_consecutive_errors:
             raise SafetyViolation("连续错误次数超限")
 
-    def check_dead_loop(self, tool_name: str, tool_args: dict, state: TurnState) -> None:
+    def check_dead_loop(self, tool_name: str, tool_args: dict[str, Any], state: TurnState) -> None:
         call_key = (tool_name, json.dumps(tool_args, sort_keys=True))
         if call_key in state.tool_call_history:
             raise DeadLoopDetected(f"检测到重复工具调用: {tool_name}")
@@ -262,7 +262,7 @@ class AgentLoop:
             logger.warning("记忆检索失败: %s", e)
 
         system_prompt = build_system_prompt(self.project_root, memory_context=memory_context)
-        messages = [SystemMessage(content=system_prompt)]
+        messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
 
         for h in history[-10:]:
             if h["role"] == "user":
@@ -285,7 +285,7 @@ class AgentLoop:
             state.errors.append(f"LLM 调用失败: {e}")
             raise
 
-    async def _act(self, tool_name: str, tool_args: dict, state: TurnState) -> str:
+    async def _act(self, tool_name: str, tool_args: dict[str, Any], state: TurnState) -> str:
         """Act: 执行工具。"""
         try:
             tool = TOOLS.get(tool_name)

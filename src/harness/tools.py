@@ -23,17 +23,17 @@ class ToolExecutionError(Exception):
 
 def _safe_path(base: str, target: str) -> Path:
     """Resolve target relative to base, preventing directory escape."""
-    base = Path(base).resolve()
+    base_path = Path(base).resolve()
     target_path = Path(target)
 
     if target_path.is_absolute():
         target_path = target_path.resolve()
-        if not str(target_path).startswith(str(base)):
+        if not str(target_path).startswith(str(base_path)):
             raise ToolExecutionError(f"Path escape blocked: {target}")
         return target_path
 
-    target_path = (base / target).resolve()
-    if not str(target_path).startswith(str(base)):
+    target_path = (base_path / target).resolve()
+    if not str(target_path).startswith(str(base_path)):
         raise ToolExecutionError(f"Path escape blocked: {target}")
     return target_path
 
