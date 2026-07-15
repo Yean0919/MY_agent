@@ -23,7 +23,7 @@ import asyncio
 import os
 import re
 import shutil
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import click
@@ -144,7 +144,7 @@ def _show_agents(orchestrator: Orchestrator) -> None:
 
 def _show_status(session_state: SessionState, settings) -> None:
     """显示会话状态。"""
-    click.echo(f"\n[Status] 会话状态:")
+    click.echo("\n[Status] 会话状态:")
     click.echo(f"  Session: {session_state.session_id}")
     click.echo(f"  History: {session_state.get_history_count()} messages")
     click.echo(f"  Provider: {settings.llm.default_provider}")
