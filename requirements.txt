@@ -1,0 +1,24 @@
+# 生产依赖
+langchain>=0.3,<1.0
+langchain-openai>=0.2.0
+langchain-anthropic>=0.2.0
+langchain-google-genai>=2.0.0
+langgraph==0.2.*
+chromadb>=0.5,<1.0
+sqlalchemy>=2.0.0
+pygls>=1.3,<2.0
+tree-sitter>=0.22,<1.0
+tree-sitter-python>=0.23.0
+mcp>=1.0,<2.0
+langchain-mcp-adapters>=0.1
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.0,<3.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+streamlit>=1.30,<2.0
+structlog>=24.0.0
+rich>=13.0.0
+httpx>=0.27.0
+tenacity>=8.0.0

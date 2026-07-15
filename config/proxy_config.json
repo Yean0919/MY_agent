@@ -1,0 +1,33 @@
+{
+  "proxy": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 8080
+  },
+  "providers": [
+    {
+      "name": "OpenAI",
+      "url": "https://api.openai.com/v1",
+      "api_key": "",
+      "active": false
+    },
+    {
+      "name": "Anthropic",
+      "url": "https://api.anthropic.com/v1",
+      "api_key": "",
+      "active": false
+    },
+    {
+      "name": "Custom",
+      "url": "",
+      "api_key": "",
+      "active": false
+    },
+    {
+      "name": "商汤",
+      "url": "https://token.sensenova.cn/v1",
+      "api_key": "sk-GmVaFTxKxdxanDTVLwWLLyShtpArSMHT",
+      "active": true
+    }
+  ]
+}

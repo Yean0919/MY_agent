@@ -1,0 +1,20 @@
+# 开发依赖
+-r requirements.txt
+
+# 测试
+pytest>=8.0
+pytest-asyncio>=0.23.0
+pytest-mock>=3.12.0
+pytest-randomly>=3.15.0
+pytest-cov>=5.0.0
+
+# 代码质量
+ruff>=0.1.0
+mypy>=1.0.0
+pre-commit>=3.0.0
+
+# 类型存根
+types-PyYAML>=6.0
+
+# 项目本身（editable install，让 src 包在 pytest/mypy 中可导入）
+-e .

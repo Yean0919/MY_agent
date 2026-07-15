@@ -1,0 +1,9 @@
+# MCP 服务器配置
+
+mcp_servers:
+  - name: example_server
+    command: python
+    args:
+      - -m
+      - mcp.server.example
+    env: {}
