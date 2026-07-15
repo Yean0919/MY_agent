@@ -16,9 +16,8 @@ from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-from src.config.settings import get_settings
 from src.core.llm import _get_llm
-from src.harness.memory import MemoryItem, MemoryTier, PersistentMemoryStore
+from src.harness.memory import PersistentMemoryStore
 from src.harness.tools import TOOLS, get_tools_list
 
 logger = logging.getLogger(__name__)

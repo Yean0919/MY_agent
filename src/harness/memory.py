@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+
 # Python 3.10 兼容：StrEnum 是 3.11+ 才有的
 class _StrEnum(str, Enum):
     def __str__(self) -> str:
