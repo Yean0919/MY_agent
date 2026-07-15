@@ -43,6 +43,9 @@ python -m venv .venv
 
 # 安装依赖
 pip install -r requirements.txt
+
+# 安装为可编辑模式（启用 yean 命令）
+pip install -e .
 ```
 
 ### 配置
@@ -64,6 +67,46 @@ OPENAI_API_KEY=你的API_Key
 支持的 provider：`anthropic`、`openai`、`google`、`faux`。通过 `LLM_BASE_URL` 可对接任意 OpenAI 兼容接口（如 SenseNova）。
 
 ### 启动
+
+> **三种启动方式**：终端交互（推荐日常使用）、API 服务 + 可视化面板（完整平台）。
+
+#### 方式一：终端交互（`yean` 命令）
+
+安装为可编辑模式后，直接在终端运行 `yean` 即可开始对话式编程。所有输入统一走 Harness（TAOR 循环），由 LLM 自主决定是直接回复还是调用工具。
+
+```bash
+# 安装为可编辑模式（只需执行一次）
+pip install -e .
+
+# 启动终端交互
+yean
+
+# 单次执行（不进入交互模式）
+yean "写一个快速排序函数"
+
+# 指定会话
+yean --session my_project "重构 auth 模块"
+
+# 指定工作目录
+yean --cwd /path/to/project "解释这个代码库"
+
+# 指定模型 / provider
+yean --provider openai --model sensenova-6.7-flash-lite "你好"
+```
+
+终端内置命令：
+
+| 命令 | 功能 |
+|------|------|
+| `quit` / `exit` / `q` | 退出 |
+| `memory` | 查看会话记忆 |
+| `clear` | 清空当前会话 |
+| `tools` | 列出可用工具 |
+| `agents` | 列出已注册 Agent |
+| `status` | 查看会话状态 |
+| `help` | 显示帮助 |
+
+#### 方式二：API 服务 + 可视化面板
 
 需要**两个终端**：
 
