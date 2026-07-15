@@ -124,6 +124,7 @@ def _print_welcome(settings) -> None:
 
 # ── 内置命令 ───────────────────────────────────────────────────────────────
 
+
 def _show_tools(tool_registry: ToolRegistry) -> None:
     """显示可用工具。"""
     click.echo("\n[Tools] 可用工具:")
@@ -180,6 +181,7 @@ def _save_memory(session_state: SessionState, text: str) -> None:
 
 # ── Agent 执行（多 Agent 编排，agents 命令用）────────────────────────────
 
+
 def _build_orchestrator() -> Orchestrator:
     """构建并注册 Agent 的编排器。"""
     orchestrator = Orchestrator()
@@ -191,6 +193,7 @@ def _build_orchestrator() -> Orchestrator:
 
 
 # ── 配置检查 ───────────────────────────────────────────────────────────────
+
 
 def _check_credentials(settings) -> str | None:
     """检查 LLM 凭证是否配置，返回错误信息或 None。"""
@@ -207,6 +210,7 @@ def _check_credentials(settings) -> str | None:
 
 
 # ── CLI 命令 ───────────────────────────────────────────────────────────────
+
 
 @click.command()
 @click.argument("prompt", required=False)
@@ -256,8 +260,7 @@ async def _single_shot(prompt: str, session: str, settings, project_root: str) -
 
     click.echo(f"\n{reply}")
     click.echo(
-        f"\n[Meta] tools: {metadata.get('tool_calls', 0)}, "
-        f"time: {metadata.get('duration', 0):.1f}s"
+        f"\n[Meta] tools: {metadata.get('tool_calls', 0)}, time: {metadata.get('duration', 0):.1f}s"
     )
 
 
