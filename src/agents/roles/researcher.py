@@ -57,6 +57,7 @@ class ResearcherAgent(BaseAgent):
                 ],
                 system_prompt="你是一个技术研究员，基于你的知识对主题进行深入分析。只输出 JSON，不要其他内容。",
                 profile_name=self._get_profile(),
+                agent_name=self.name,
             )
             import json
 

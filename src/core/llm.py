@@ -9,6 +9,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
 from src.config.settings import ModelProfile, get_settings
+from src.core.token_tracker import TokenUsage, get_token_stats
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +140,7 @@ async def call_llm(
     *,
     system_prompt: str | None = None,
     profile_name: str | None = None,
+    agent_name: str | None = None,
 ) -> str:
     """调用 LLM 并返回文本结果
 
@@ -146,6 +148,7 @@ async def call_llm(
         messages: 对话消息列表
         system_prompt: 可选的系统提示
         profile_name: 可选的模型 profile 名称，为 None 时使用默认模型
+        agent_name: 可选的 Agent 名称，用于 Token 统计
 
     Returns:
         LLM 返回的文本内容
@@ -161,13 +164,36 @@ async def call_llm(
 
         # 使用 streaming 模式避免 surrogate 字符序列化问题
         content_parts: list[str] = []
+        usage_metadata: dict[str, int] = {}
         async for chunk in llm.astream(messages):
             if hasattr(chunk, "content") and chunk.content:
                 content_parts.append(str(chunk.content))
+            # 提取 usage metadata（LangChain 在最后一个 chunk 返回）
+            if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+                usage_metadata = chunk.usage_metadata
+            elif hasattr(chunk, "response_metadata") and chunk.response_metadata:
+                # 某些 provider 在 response_metadata 中返回 usage
+                meta = chunk.response_metadata
+                if "token_usage" in meta:
+                    usage_metadata = meta["token_usage"]
+
         content = "".join(content_parts)
         if not content:
             content = ""
         content = _clean_content(content)
+
+        # 记录 Token 使用量
+        if usage_metadata:
+            usage = TokenUsage(
+                prompt_tokens=usage_metadata.get("prompt_tokens", 0),
+                completion_tokens=usage_metadata.get("completion_tokens", 0),
+                total_tokens=usage_metadata.get("total_tokens", 0),
+                model=getattr(llm, "model_name", getattr(llm, "model", "")),
+                profile=profile_name or "default",
+                agent=agent_name or "",
+            )
+            get_token_stats().add(usage)
+
         return content
     except Exception as e:
         logger.error("LLM call failed (profile=%s): %s", profile_name, e)

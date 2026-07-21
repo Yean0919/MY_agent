@@ -106,6 +106,7 @@ class CoderAgent(BaseAgent):
                 ],
                 system_prompt="你是一个经验丰富的软件工程师，代码简洁、规范、有注释。",
                 profile_name=self._get_profile(),
+                agent_name=self.name,
             )
 
             # 提取纯代码（去除 markdown 包裹）

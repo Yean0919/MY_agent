@@ -55,6 +55,7 @@ class TesterAgent(BaseAgent):
                 ],
                 system_prompt="你是一个测试专家，编写覆盖正常路径、边界情况和异常情况的 pytest 测试。",
                 profile_name=self._get_profile(),
+                agent_name=self.name,
             )
             return {
                 "test_code": test_code,

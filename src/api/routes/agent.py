@@ -12,6 +12,7 @@ from src.agents.roles.reviewer import ReviewerAgent
 from src.agents.roles.tester import TesterAgent
 from src.api.schemas.requests import AgentRequest
 from src.core.task_store import TaskStore
+from src.core.token_tracker import get_token_stats
 
 router = APIRouter()
 
@@ -138,3 +139,13 @@ async def get_stats() -> dict[str, Any]:
         "error": _task_store.get_error_count(),
         "by_status": _task_store.get_stats(),
     }
+
+
+@router.get("/token-usage")
+async def get_token_usage() -> dict[str, Any]:
+    """获取 Token 消耗统计
+
+    Returns:
+        Token 使用量统计（总量、按 Agent 分组、按模型分组）
+    """
+    return get_token_stats().summary()

@@ -56,6 +56,7 @@ class ReviewerAgent(BaseAgent):
                 ],
                 system_prompt="你是一个严格的代码审查专家，关注正确性、性能、安全性和可维护性。只输出 JSON，不要其他内容。",
                 profile_name=self._get_profile(),
+                agent_name=self.name,
             )
             # 尝试解析 JSON，失败则返回原始文本
             import json
