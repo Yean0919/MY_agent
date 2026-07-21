@@ -59,3 +59,9 @@ dmypy.json
 *.tmp
 *.bak
 *.swp
+
+# 个人文件
+景尔妮_AI大模型工程师简历*.docx
+景尔妮_AI大模型工程师简历*.md
+Python_AI开发工程师技能文档.md
+写一个.py
