@@ -111,7 +111,9 @@ class TestOrchestratorMultiModel:
             coder = orchestrator.get_agent("coder")
             coder.execute = AsyncMock(return_value={"generated_code": "x=1", "status": "completed"})
 
-            result = await orchestrator.execute({"task": "这是一个复杂的代码重构任务需要多人协作完成"})
+            result = await orchestrator.execute(
+                {"task": "这是一个复杂的代码重构任务需要多人协作完成"}
+            )
             assert "agent_models" in result
 
 

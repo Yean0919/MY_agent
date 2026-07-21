@@ -10,7 +10,9 @@ class ResearcherAgent(BaseAgent):
     """研究专家，负责信息检索和分析"""
 
     def __init__(self, model_profile: str | None = None) -> None:
-        super().__init__(name="researcher", description="信息检索和分析", model_profile=model_profile)
+        super().__init__(
+            name="researcher", description="信息检索和分析", model_profile=model_profile
+        )
 
     def _get_profile(self) -> str | None:
         """获取模型 profile：优先使用显式配置，其次从 settings 自动解析"""

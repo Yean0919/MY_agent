@@ -103,7 +103,7 @@ def _parse_model_profiles() -> dict[str, ModelProfile]:
     for key, value in os.environ.items():
         if not key.startswith(prefix):
             continue
-        rest = key[len(prefix):]
+        rest = key[len(prefix) :]
         parts = rest.split("_", 1)
         if len(parts) != 2 or not value:
             continue
@@ -138,7 +138,7 @@ def _parse_agent_models() -> dict[str, str]:
     for key, value in os.environ.items():
         if not key.startswith(prefix) or not value:
             continue
-        agent_name = key[len(prefix):].lower()
+        agent_name = key[len(prefix) :].lower()
         mapping[agent_name] = value.lower()
 
     return mapping

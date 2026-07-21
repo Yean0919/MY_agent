@@ -53,7 +53,9 @@ class Orchestrator(BaseAgent):
     """编排器，负责协调多个 Agent 的工作，支持多模型配置"""
 
     def __init__(self, model_profile: str | None = None) -> None:
-        super().__init__(name="orchestrator", description="协调多个 Agent 的工作", model_profile=model_profile)
+        super().__init__(
+            name="orchestrator", description="协调多个 Agent 的工作", model_profile=model_profile
+        )
         self._agents: dict[str, BaseAgent] = {}
 
     def _get_profile(self) -> str | None:
@@ -179,7 +181,11 @@ class Orchestrator(BaseAgent):
                     )
             else:
                 result["results"].append(
-                    {"agent": agent_name, "status": "error", "message": f"No agent available for: {agent_name}"}
+                    {
+                        "agent": agent_name,
+                        "status": "error",
+                        "message": f"No agent available for: {agent_name}",
+                    }
                 )
             return result
 
@@ -201,7 +207,11 @@ class Orchestrator(BaseAgent):
             agent = self._agents.get(agent_name)
             if not agent:
                 result["results"].append(
-                    {"agent": agent_name, "status": "error", "message": f"Agent not found: {agent_name}"}
+                    {
+                        "agent": agent_name,
+                        "status": "error",
+                        "message": f"Agent not found: {agent_name}",
+                    }
                 )
                 continue
 
