@@ -117,7 +117,12 @@ def _parse_model_profiles() -> dict[str, ModelProfile]:
         try:
             # api_key 需要特殊处理
             api_key_val = fields.pop("api_key", None)
-            profile = ModelProfile(**fields)
+            profile = ModelProfile(
+                provider=fields.get("provider", "openai"),  # type: ignore[arg-type]
+                model=fields.get("model", ""),
+                base_url=fields.get("base_url", ""),
+                temperature=float(fields.get("temperature", "0.3")),
+            )
             if api_key_val:
                 profile.api_key = SecretStr(api_key_val)
             result[name] = profile

@@ -200,8 +200,8 @@ class Orchestrator(BaseAgent):
         # 记录每个 Agent 使用的模型
         result["agent_models"] = self.get_agent_model_info()
 
-        # 串联执行
-        context: dict[str, Any] = {"task": task, "code_request": task}
+        # 串联执行（沿用 fast_path 的 context 变量名，此处为完整编排路径）
+        ctx: dict[str, Any] = {"task": task, "code_request": task}
 
         for agent_name in agent_names:
             agent = self._agents.get(agent_name)
@@ -216,18 +216,18 @@ class Orchestrator(BaseAgent):
                 continue
 
             try:
-                agent_result = await agent.execute(context)
+                agent_result = await agent.execute(ctx)
                 result["results"].append(
                     {"agent": agent_name, "status": "success", "result": agent_result}
                 )
 
                 # 把当前结果传递给下一个 Agent
                 if agent_name == "coder":
-                    context["code"] = agent_result.get("generated_code", "")
+                    ctx["code"] = agent_result.get("generated_code", "")
                     if agent_result.get("output_path"):
-                        context["output_path"] = agent_result["output_path"]
+                        ctx["output_path"] = agent_result["output_path"]
                 elif agent_name == "tester":
-                    context["test_code"] = agent_result.get("test_code", "")
+                    ctx["test_code"] = agent_result.get("test_code", "")
 
             except Exception as e:
                 result["results"].append(
