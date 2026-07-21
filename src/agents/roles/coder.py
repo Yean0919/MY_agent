@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src.core.agent import BaseAgent
-from src.core.llm import call_llm
+from src.core.llm import call_llm, resolve_agent_profile
 
 
 def _extract_code_block(text: str) -> str:
@@ -64,17 +64,18 @@ def _infer_filename(request: str, language: str) -> str:
 class CoderAgent(BaseAgent):
     """代码专家，负责编写和修改代码，并自动保存到文件"""
 
-    def __init__(self) -> None:
-        super().__init__(name="coder", description="编写和修改代码")
+    def __init__(self, model_profile: str | None = None) -> None:
+        super().__init__(name="coder", description="编写和修改代码", model_profile=model_profile)
+
+    def _get_profile(self) -> str | None:
+        """获取模型 profile：优先使用显式配置，其次从 settings 自动解析"""
+        return self.model_profile or resolve_agent_profile(self.name)
 
     async def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """执行代码编写任务，并自动将生成的代码保存到文件
 
         Args:
             input_data: 包含 code_request, output_path, language 字段
-                - code_request/task: 代码需求描述
-                - output_path: 输出文件路径（可选，自动推断）
-                - language: 编程语言（默认 python）
 
         Returns:
             包含 generated_code, output_path, file_size, status 字段
@@ -104,6 +105,7 @@ class CoderAgent(BaseAgent):
                     }
                 ],
                 system_prompt="你是一个经验丰富的软件工程师，代码简洁、规范、有注释。",
+                profile_name=self._get_profile(),
             )
 
             # 提取纯代码（去除 markdown 包裹）

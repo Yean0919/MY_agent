@@ -3,14 +3,18 @@
 from typing import Any
 
 from src.core.agent import BaseAgent
-from src.core.llm import call_llm
+from src.core.llm import call_llm, resolve_agent_profile
 
 
 class ReviewerAgent(BaseAgent):
     """审查专家，负责代码审查"""
 
-    def __init__(self) -> None:
-        super().__init__(name="reviewer", description="审查代码质量")
+    def __init__(self, model_profile: str | None = None) -> None:
+        super().__init__(name="reviewer", description="审查代码质量", model_profile=model_profile)
+
+    def _get_profile(self) -> str | None:
+        """获取模型 profile：优先使用显式配置，其次从 settings 自动解析"""
+        return self.model_profile or resolve_agent_profile(self.name)
 
     async def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """执行代码审查
@@ -51,6 +55,7 @@ class ReviewerAgent(BaseAgent):
                     }
                 ],
                 system_prompt="你是一个严格的代码审查专家，关注正确性、性能、安全性和可维护性。只输出 JSON，不要其他内容。",
+                profile_name=self._get_profile(),
             )
             # 尝试解析 JSON，失败则返回原始文本
             import json

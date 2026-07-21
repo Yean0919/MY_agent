@@ -7,9 +7,10 @@ from typing import Any
 class BaseAgent(ABC):
     """Agent 基类，所有 Agent 必须继承此类"""
 
-    def __init__(self, name: str, description: str = ""):
+    def __init__(self, name: str, description: str = "", model_profile: str | None = None):
         self.name = name
         self.description = description
+        self.model_profile = model_profile
 
     @abstractmethod
     async def execute(self, input_data: dict[str, Any]) -> dict[str, Any]:
@@ -24,4 +25,5 @@ class BaseAgent(ABC):
         pass
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.name})"
+        profile_info = f", profile={self.model_profile}" if self.model_profile else ""
+        return f"{self.__class__.__name__}(name={self.name}{profile_info})"

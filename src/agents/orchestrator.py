@@ -1,4 +1,4 @@
-"""编排器 - 协调多个 Agent"""
+"""编排器 - 协调多个 Agent，支持多模型配置"""
 
 import json
 import re
@@ -6,7 +6,7 @@ from typing import Any
 
 from src.core.agent import BaseAgent
 from src.core.exceptions import AgentError
-from src.core.llm import call_llm
+from src.core.llm import call_llm, resolve_agent_profile
 
 # 简单任务关键词：匹配到这些模式的任务走快速通道（单 Agent）
 _SIMPLE_TASK_PATTERNS = [
@@ -50,14 +50,18 @@ def _classify_simple_task(task: str) -> str:
 
 
 class Orchestrator(BaseAgent):
-    """编排器，负责协调多个 Agent 的工作"""
+    """编排器，负责协调多个 Agent 的工作，支持多模型配置"""
 
-    def __init__(self) -> None:
-        super().__init__(name="orchestrator", description="协调多个 Agent 的工作")
+    def __init__(self, model_profile: str | None = None) -> None:
+        super().__init__(name="orchestrator", description="协调多个 Agent 的工作", model_profile=model_profile)
         self._agents: dict[str, BaseAgent] = {}
 
+    def _get_profile(self) -> str | None:
+        """获取编排器自身的模型 profile"""
+        return self.model_profile or resolve_agent_profile(self.name)
+
     def register_agent(self, agent: BaseAgent) -> None:
-        """注册 Agent
+        """注册 Agent，自动从 settings 解析模型配置
 
         Args:
             agent: Agent 实例
@@ -66,42 +70,41 @@ class Orchestrator(BaseAgent):
             raise ValueError("Agent name cannot be empty")
         self._agents[agent.name] = agent
 
-    def unregister_agent(self, name: str) -> None:
-        """注销 Agent
+    def register_agent_with_model(self, agent: BaseAgent, profile_name: str) -> None:
+        """注册 Agent 并显式指定模型 profile
 
         Args:
-            name: Agent 名称
+            agent: Agent 实例
+            profile_name: 模型 profile 名称
         """
+        agent.model_profile = profile_name
+        self.register_agent(agent)
+
+    def unregister_agent(self, name: str) -> None:
+        """注销 Agent"""
         self._agents.pop(name, None)
 
     def get_agent(self, name: str) -> BaseAgent | None:
-        """获取 Agent
-
-        Args:
-            name: Agent 名称
-
-        Returns:
-            Agent 实例或 None
-        """
+        """获取 Agent"""
         return self._agents.get(name)
 
     def list_agents(self) -> list[str]:
-        """列出所有已注册的 Agent
-
-        Returns:
-            Agent 名称列表
-        """
+        """列出所有已注册的 Agent"""
         return list(self._agents.keys())
 
-    async def _plan_agents(self, task: str) -> list[str]:
-        """用 LLM 决定需要哪些 Agent 以及执行顺序
-
-        Args:
-            task: 任务描述
+    def get_agent_model_info(self) -> dict[str, str | None]:
+        """获取所有 Agent 的模型配置信息
 
         Returns:
-            Agent 名称列表（执行顺序）
+            {agent_name: profile_name} 映射
         """
+        return {
+            name: agent.model_profile or resolve_agent_profile(name)
+            for name, agent in self._agents.items()
+        }
+
+    async def _plan_agents(self, task: str) -> list[str]:
+        """用 LLM 决定需要哪些 Agent 以及执行顺序"""
         available = list(self._agents.keys())
         if not available:
             return []
@@ -120,6 +123,7 @@ class Orchestrator(BaseAgent):
                     }
                 ],
                 system_prompt="你是一个任务编排专家。只输出 JSON 数组，不要其他内容。",
+                profile_name=self._get_profile(),
             )
             try:
                 plan = json.loads(plan_text)
@@ -144,17 +148,14 @@ class Orchestrator(BaseAgent):
 
         Returns:
             编排结果
-
-        Raises:
-            AgentError: 编排错误
         """
         task = input_data.get("task", "")
         if not task:
             raise AgentError("Task cannot be empty")
 
-        result = {"task": task, "plan": [], "results": []}
+        result: dict[str, Any] = {"task": task, "plan": [], "results": []}
 
-        # 快速通道：简单任务只调用一个 Agent，跳过 LLM 规划和多 Agent 串联
+        # 快速通道：简单任务只调用一个 Agent
         if _is_simple_task(task):
             agent_name = _classify_simple_task(task)
             agent = self._agents.get(agent_name)
@@ -170,31 +171,19 @@ class Orchestrator(BaseAgent):
                     context = {"task": task, "code_request": task}
                     agent_result = await agent.execute(context)
                     result["results"].append(
-                        {
-                            "agent": agent_name,
-                            "status": "success",
-                            "result": agent_result,
-                        }
+                        {"agent": agent_name, "status": "success", "result": agent_result}
                     )
                 except Exception as e:
                     result["results"].append(
-                        {
-                            "agent": agent_name,
-                            "status": "error",
-                            "message": str(e),
-                        }
+                        {"agent": agent_name, "status": "error", "message": str(e)}
                     )
             else:
                 result["results"].append(
-                    {
-                        "agent": agent_name,
-                        "status": "error",
-                        "message": f"No agent available for: {agent_name}",
-                    }
+                    {"agent": agent_name, "status": "error", "message": f"No agent available for: {agent_name}"}
                 )
             return result
 
-        # 完整编排：用 LLM 规划 Agent 执行顺序
+        # 完整编排
         agent_names = await self._plan_agents(task)
         if not agent_names:
             agent_names = list(self._agents.keys())
@@ -202,35 +191,29 @@ class Orchestrator(BaseAgent):
         result["plan"] = agent_names
         result["fast_path"] = False
 
-        # 串联执行：前一个 Agent 的输出作为后一个的输入
-        context = {"task": task, "code_request": task}
+        # 记录每个 Agent 使用的模型
+        result["agent_models"] = self.get_agent_model_info()
+
+        # 串联执行
+        context: dict[str, Any] = {"task": task, "code_request": task}
 
         for agent_name in agent_names:
             agent = self._agents.get(agent_name)
             if not agent:
                 result["results"].append(
-                    {
-                        "agent": agent_name,
-                        "status": "error",
-                        "message": f"Agent not found: {agent_name}",
-                    }
+                    {"agent": agent_name, "status": "error", "message": f"Agent not found: {agent_name}"}
                 )
                 continue
 
             try:
                 agent_result = await agent.execute(context)
                 result["results"].append(
-                    {
-                        "agent": agent_name,
-                        "status": "success",
-                        "result": agent_result,
-                    }
+                    {"agent": agent_name, "status": "success", "result": agent_result}
                 )
 
                 # 把当前结果传递给下一个 Agent
                 if agent_name == "coder":
                     context["code"] = agent_result.get("generated_code", "")
-                    # 传递输出路径，让后续 Agent 知道文件位置
                     if agent_result.get("output_path"):
                         context["output_path"] = agent_result["output_path"]
                 elif agent_name == "tester":
@@ -238,11 +221,7 @@ class Orchestrator(BaseAgent):
 
             except Exception as e:
                 result["results"].append(
-                    {
-                        "agent": agent_name,
-                        "status": "error",
-                        "message": str(e),
-                    }
+                    {"agent": agent_name, "status": "error", "message": str(e)}
                 )
 
         return result
