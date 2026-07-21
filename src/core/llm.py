@@ -157,10 +157,7 @@ async def call_llm(
         messages = [{"role": "system", "content": system_prompt}] + messages
 
     try:
-        if profile_name:
-            llm = get_llm_by_profile(profile_name)
-        else:
-            llm = _get_llm()
+        llm = get_llm_by_profile(profile_name) if profile_name else _get_llm()
 
         # 使用 streaming 模式避免 surrogate 字符序列化问题
         content_parts: list[str] = []

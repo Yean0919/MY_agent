@@ -8,9 +8,8 @@ import pytest
 from src.agents.orchestrator import Orchestrator
 from src.agents.roles.coder import CoderAgent
 from src.agents.roles.reviewer import ReviewerAgent
-from src.agents.roles.tester import TesterAgent
 from src.core.agent import BaseAgent
-from src.core.llm import call_llm, get_llm_by_profile, reset_llm, resolve_agent_profile
+from src.core.llm import call_llm, reset_llm
 
 
 class TestModelProfile:
