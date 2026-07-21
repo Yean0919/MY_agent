@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Resume"
+  short_description: "Generate repository project docs and resume project experience."
+  default_prompt: "Read a project repository, generate product development, system architecture, requirements, and resume project experience Markdown documents."
